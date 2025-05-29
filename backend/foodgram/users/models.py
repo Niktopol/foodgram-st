@@ -8,7 +8,7 @@ class FoodgramUser(AbstractUser):
         max_length=150,
         unique=True,
         validators=[
-            RegexValidator(regex=r'^[\w.@+-]+\z')
+            RegexValidator(regex=r'^[\w.@+-]+$')
         ],
         blank=False,
         null=False,
