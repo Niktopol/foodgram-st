@@ -12,7 +12,7 @@ class FoodgramUser(AbstractUser):
         ],
         blank=False,
         null=False,
-        verbose_name="Уникальный юзернейм"
+        verbose_name='Уникальный юзернейм'
     )
 
     email = models.EmailField(
@@ -20,38 +20,64 @@ class FoodgramUser(AbstractUser):
         unique=True,
         blank=False,
         null=False,
-        verbose_name="Адрес электронной почты"
+        verbose_name='Адрес электронной почты'
     )
 
     first_name = models.CharField(
         max_length=150,
         blank=False,
         null=False,
-        verbose_name="Имя"
+        verbose_name='Имя'
     )
 
     last_name = models.CharField(
         max_length=150,
         blank=False,
         null=False,
-        verbose_name="Фамилия"
+        verbose_name='Фамилия'
     )
 
     avatar = models.ImageField(
-        upload_to='avatar/images/',
+        upload_to='avatar/',
         blank=True,
         null=True,
         default=None,
-        verbose_name="Аватар пользователя"
+        verbose_name='Аватар пользователя'
     )
 
     def __str__(self):
         return self.username
 
     class Meta:
-        verbose_name = "Пользователь"
-        verbose_name_plural = "Пользователи"
-        ordering = ("username",)
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+        ordering = ('username',)
 
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
     USERNAME_FIELD = 'email'
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        FoodgramUser,
+        on_delete=models.CASCADE,
+        related_name='subscriptions',
+        verbose_name='Подписчик'
+    )
+
+    following = models.ForeignKey(
+        FoodgramUser,
+        on_delete=models.CASCADE,
+        verbose_name='Автор'
+    )
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+        ordering = ('user',)
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'following'],
+                name='unique_subscription'
+            )
+        ]
