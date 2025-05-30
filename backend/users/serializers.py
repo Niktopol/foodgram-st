@@ -3,13 +3,11 @@ from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
 
-from users.models import FoodgramUser, Subscription
-from recipes.serializers import SubscriptionRecipeSerializer
+from .models import FoodgramUser, Subscription
+from recipes.models import Recipe
 
 
 class FoodgramUserSerializer(UserSerializer):
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
     avatar = serializers.SerializerMethodField()
     is_subscribed = serializers.SerializerMethodField()
 
@@ -73,3 +71,9 @@ class SubscriptionUserSerializer(FoodgramUserSerializer):
     class Meta(FoodgramUserSerializer.Meta):
         fields = (FoodgramUserSerializer.Meta.fields
                   + ('recipes', 'recipes_count'))
+
+
+class SubscriptionRecipeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
