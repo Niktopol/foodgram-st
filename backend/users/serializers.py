@@ -4,9 +4,10 @@ from djoser.serializers import UserSerializer
 from rest_framework import serializers
 
 from users.models import FoodgramUser, Subscription
+from recipes.serializers import SubscriptionRecipeSerializer
 
 
-class CustomUserSerializer(UserSerializer):
+class FoodgramUserSerializer(UserSerializer):
     first_name = serializers.CharField()
     last_name = serializers.CharField()
     avatar = serializers.SerializerMethodField()
@@ -43,6 +44,32 @@ class Base64ImageField(serializers.ImageField):
 class AvatarSerializer(serializers.ModelSerializer):
     avatar = Base64ImageField(required=True, allow_null=False)
 
-    class Meta(UserSerializer.Meta):
+    class Meta:
         model = FoodgramUser
         fields = ('avatar',)
+
+
+class SubscriptionUserSerializer(FoodgramUserSerializer):
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        recipes_limit = request.query_params.get('recipes_limit')
+        recipes = obj.recipes.all()
+
+        if recipes_limit and recipes_limit.isdigit():
+            recipes = recipes[:int(recipes_limit)]
+
+        return SubscriptionRecipeSerializer(
+            recipes,
+            many=True,
+            context=self.context
+        ).data
+
+    def get_recipes_count(self, obj):
+        return len(obj.recipes.all())
+
+    class Meta(FoodgramUserSerializer.Meta):
+        fields = (FoodgramUserSerializer.Meta.fields
+                  + ('recipes', 'recipes_count'))
