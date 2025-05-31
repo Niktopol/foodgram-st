@@ -99,7 +99,7 @@ class CustomUserViewSet(UserViewSet):
                 following=following
             )
 
-            if subscription is not None:
+            if subscription.exists():
                 subscription.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
             else:

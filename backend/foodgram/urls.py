@@ -14,5 +14,6 @@ router.register('recipes', RecipeViewSet, basename='recipes')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('s/<int:id>', RecipeViewSet.as_view({'get': 'retrieve'})),
     path('api/auth/', include('djoser.urls.authtoken')),
 ]
