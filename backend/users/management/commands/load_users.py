@@ -1,0 +1,39 @@
+import json
+import os
+from django.core.management.base import BaseCommand
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+
+class Command(BaseCommand):
+    help = 'Загрузка пользователей из data/users.json'
+
+    def handle(self, *args, **kwargs):
+        file_path = os.path.join('data', 'users.json')
+        created_count = 0
+        with open(file_path, encoding='utf-8') as file:
+            users = json.load(file)
+            for user_data in users:
+                email = user_data['email']
+                if User.objects.filter(email=email).exists():
+                    continue
+
+                user = User.objects.create_user(
+                    email=email,
+                    username=user_data['username'],
+                    first_name=user_data['first_name'],
+                    last_name=user_data['last_name'],
+                    password=user_data['password']
+                )
+
+                if user_data.get('is_admin'):
+                    user.is_staff = True
+                    user.is_superuser = True
+                    user.save()
+
+                created_count += 1
+
+        self.stdout.write(
+            self.style.SUCCESS(f'Создано пользователей: {created_count}')
+        )

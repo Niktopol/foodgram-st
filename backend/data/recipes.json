@@ -1,0 +1,49 @@
+[
+    {
+        "name": "что-то с чем-то",
+        "text": "Секретный рецепт. Никому неизвестен.",
+        "cooking_time": 99,
+        "author": 1,
+        "ingredients": [
+            {
+                "id": 1,
+                "amount": 1
+            },
+            {
+                "id": 2,
+                "amount": 2
+            }
+        ],
+        "image": "1.jpg"
+    },
+    {
+        "name": "что-то без чего-то",
+        "text": "Крайне секретный рецепт, однако известен всем.",
+        "cooking_time": 1,
+        "author": 2,
+        "ingredients": [
+            {
+                "id": 3,
+                "amount": 10
+            },
+            {
+                "id": 30,
+                "amount": 20
+            }
+        ],
+        "image": "2.jpg"
+    },
+    {
+        "name": "ничто с ничем",
+        "text": "Неизвестно.",
+        "cooking_time": 10000,
+        "author": 3,
+        "ingredients": [
+            {
+                "id": 10,
+                "amount": 1
+            }
+        ],
+        "image": "3.jpg"
+    }
+]

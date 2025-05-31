@@ -5,7 +5,6 @@ from .models import Recipe, IngredientToRecipe, Favorite, Cart
 
 class IngredientToRecipeInline(admin.TabularInline):
     model = IngredientToRecipe
-    extra = 1  # Показывает 1 пустую строку для нового ингредиента
     min_num = 1
     verbose_name = "Ингредиент"
     verbose_name_plural = "Ингредиенты рецепта"
@@ -17,8 +16,12 @@ class RecipeAdmin(admin.ModelAdmin):
     search_fields = ('name', 'author__username')
     list_filter = ('author',)
     inlines = (IngredientToRecipeInline,)
-    readonly_fields = ('id',)
+    readonly_fields = ('id', 'favorite_count')
     ordering = ('name',)
+
+    def favorite_count(self, obj):
+        return obj.favorited_by.count()
+    favorite_count.short_description = 'Добавлений в избранное'
 
 
 @admin.register(IngredientToRecipe)

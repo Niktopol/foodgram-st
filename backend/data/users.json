@@ -1,0 +1,26 @@
+[
+    {
+        "email": "admin@example.com",
+        "username": "adminuser",
+        "first_name": "admin",
+        "last_name": "user",
+        "password": "ADMINme123456#",
+        "is_admin": true
+    },
+    {
+        "email": "user_first@example.com",
+        "username": "firstuser",
+        "first_name": "first",
+        "last_name": "user",
+        "password": "userpass1TTT123#",
+        "is_admin": false
+    },
+    {
+        "email": "user_second@example.com",
+        "username": "seconduser",
+        "first_name": "second",
+        "last_name": "user",
+        "password": "userpass1TTT123#",
+        "is_admin": false
+    }
+]

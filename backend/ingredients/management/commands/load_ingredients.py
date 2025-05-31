@@ -1,4 +1,4 @@
-import csv
+import json
 import os
 from django.core.management.base import BaseCommand
 
@@ -6,17 +6,17 @@ from recipes.models import Ingredient
 
 
 class Command(BaseCommand):
-    help = 'Загрузка ингредиентов из data/ingredients.csv'
+    help = 'Загрузка ингредиентов из data/ingredients.json'
 
     def handle(self, *args, **kwargs):
-        file_path = os.path.join('data', 'ingredients.csv')
+        file_path = os.path.join('data', 'ingredients.json')
         count = 0
         with open(file_path, encoding='utf-8') as file:
-            reader = csv.reader(file)
-            for row in reader:
+            data = json.load(file)
+            for item in data:
                 obj, created = Ingredient.objects.get_or_create(
-                    name=row[0],
-                    measurement_unit=row[1],
+                    name=item['name'],
+                    measurement_unit=item['measurement_unit'],
                 )
                 if created:
                     count += 1
