@@ -1,5 +1,7 @@
 frontend/node_modules
 infra/frontend/build
+backend/collected_static
+pg_data
 .env
 
 # Byte-compiled / optimized / DLL files
