@@ -2,6 +2,10 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 
+from .constants import (RECIPE_NAME_MAX_LENGTH,
+                        RECIPE_IMAGE_UPLOAD_DIR,
+                        MIN_COOKING_TIME_VALUE,
+                        MIN_INGREDIENT_AMOUNT_VALUE)
 from ingredients.models import Ingredient
 from users.models import FoodgramUser
 
@@ -10,14 +14,14 @@ User = get_user_model()
 
 class Recipe(models.Model):
     name = models.CharField(
-        max_length=256,
+        max_length=RECIPE_NAME_MAX_LENGTH,
         blank=False,
         null=False,
         verbose_name='Название'
     )
 
     image = models.ImageField(
-        upload_to='recipe/',
+        upload_to=RECIPE_IMAGE_UPLOAD_DIR,
         blank=False,
         null=False,
         verbose_name='Фото блюда'
@@ -31,7 +35,7 @@ class Recipe(models.Model):
 
     cooking_time = models.PositiveSmallIntegerField(
         validators=[
-            MinValueValidator(1)
+            MinValueValidator(MIN_COOKING_TIME_VALUE)
         ],
         blank=False,
         null=False,
@@ -75,7 +79,7 @@ class IngredientToRecipe(models.Model):
 
     amount = models.PositiveSmallIntegerField(
         validators=[
-            MinValueValidator(1)
+            MinValueValidator(MIN_INGREDIENT_AMOUNT_VALUE)
         ],
         verbose_name='Колчиество'
     )

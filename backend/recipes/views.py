@@ -6,6 +6,7 @@ from rest_framework import status, permissions, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
+from .constants import SHOPPING_LIST_FILE_NAME
 from .models import Recipe, Favorite, Cart, IngredientToRecipe
 from .pagination import RecipePagination
 from .permissions import IsAdminOrAuthor
@@ -102,7 +103,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             lines.append(f'{name} - {amount} {unit}')
 
         content = '\n'.join(lines)
-        filename = 'shopping_cart.txt'
+        filename = f'{SHOPPING_LIST_FILE_NAME}.txt'
 
         response = HttpResponse(content, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'

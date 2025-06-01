@@ -1,9 +1,12 @@
 from django.db import models
 
+from .constants import (MAX_INGREDIENT_NAME_LENGTH,
+                        MAX_MEASUREMENT_UNIT_NAME_LENGTH)
+
 
 class Ingredient(models.Model):
     name = models.CharField(
-        max_length=256,
+        max_length=MAX_INGREDIENT_NAME_LENGTH,
         unique=True,
         blank=False,
         null=False,
@@ -11,7 +14,7 @@ class Ingredient(models.Model):
     )
 
     measurement_unit = models.CharField(
-        max_length=10,
+        max_length=MAX_MEASUREMENT_UNIT_NAME_LENGTH,
         blank=False,
         null=False,
         verbose_name='Единица измерения',
