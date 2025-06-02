@@ -2,13 +2,10 @@ import base64
 import json
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 
 from recipes.models import IngredientToRecipe, Recipe
-
-User = get_user_model()
 
 
 class Command(BaseCommand):
@@ -22,8 +19,6 @@ class Command(BaseCommand):
             recipes = json.load(file)
 
             for data in recipes:
-                author = User.objects.get(id=data['author'])
-
                 image_data = data['image']
 
                 format, imgstr = image_data.split(';base64,')
@@ -37,7 +32,7 @@ class Command(BaseCommand):
                     name=data['name'],
                     text=data['text'],
                     cooking_time=data['cooking_time'],
-                    author=author,
+                    author_id=data['author'],
                     image=image_file
                 )
 

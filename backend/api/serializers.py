@@ -38,9 +38,38 @@ class AvatarSerializer(serializers.ModelSerializer):
         fields = ('avatar',)
 
 
+class SubscriptionSerializer(serializers.ModelSerializer):
+    following = serializers.PrimaryKeyRelatedField(
+        queryset=FoodgramUser.objects.all(),
+        error_messages={
+            'invalid': 'Неверные данные для подписки.'
+        }
+    )
+
+    class Meta:
+        model = Subscription
+        fields = ('following',)
+
+    def validate_following(self, value):
+        user = self.context['request'].user
+
+        if user == value or Subscription.objects.filter(
+            user=user,
+            following=value
+        ).exists():
+            raise self.fields['following'].fail('invalid')
+
+        return value
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        following = validated_data['following']
+        return Subscription.objects.create(user=user, following=following)
+
+
 class SubscriptionUserSerializer(FoodgramUserSerializer):
     recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
+    recipes_count = serializers.IntegerField()
 
     def get_recipes(self, obj):
         request = self.context.get('request')
@@ -55,9 +84,6 @@ class SubscriptionUserSerializer(FoodgramUserSerializer):
             many=True,
             context=self.context
         ).data
-
-    def get_recipes_count(self, obj):
-        return len(obj.recipes.all())
 
     class Meta(FoodgramUserSerializer.Meta):
         fields = (FoodgramUserSerializer.Meta.fields
@@ -100,7 +126,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         many=True,
         write_only=True,
         error_messages={
-            'invalid': 'List contains repetitive ingredients'
+            'invalid': 'Ингредиенты не должны повторяться'
         }
     )
     is_favorited = serializers.SerializerMethodField()
@@ -125,31 +151,43 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        ingredients = IngredientToRecipe.objects.filter(recipe=instance)
         representation['ingredients'] = IngredientToRecipeSerializer(
-            ingredients,
+            instance.ingredients_to_recipe,
             many=True
         ).data
         return representation
 
-    def check_ingredients(self, ingredients_data):
-        if ingredients_data is None or len(ingredients_data) == 0:
+    def validate(self, data):
+        if 'ingredients' not in self.initial_data:
+            raise serializers.ValidationError({
+                'ingredients': [
+                    self.fields['ingredients'].error_messages['required']
+                ]
+            })
+        return super().validate(data)
+
+    def validate_ingredients(self, value):
+        if value is None or len(value) == 0:
             raise self.fields['ingredients'].fail('required')
-        ingredient_ids = [item['ingredient'].id for item in ingredients_data]
+
+        ingredient_ids = [item['ingredient'].id for item in value]
         if len(ingredient_ids) != len(set(ingredient_ids)):
             raise self.fields['ingredients'].fail('invalid')
 
+        return value
+
     def create_ingredients(self, ingredients_data, recipe):
-        for item in ingredients_data:
-            IngredientToRecipe.objects.create(
+        IngredientToRecipe.objects.bulk_create([
+            IngredientToRecipe(
                 recipe=recipe,
                 ingredient=item['ingredient'],
                 amount=item['amount']
             )
+            for item in ingredients_data
+        ])
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('ingredients', None)
-        self.check_ingredients(ingredients_data)
         recipe = Recipe.objects.create(
             **validated_data,
             author=self.context['request'].user
@@ -159,7 +197,6 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('ingredients', None)
-        self.check_ingredients(ingredients_data)
         IngredientToRecipe.objects.filter(recipe=instance).delete()
         self.create_ingredients(ingredients_data, instance)
         return super().update(instance, validated_data)
@@ -169,3 +206,55 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    recipe = serializers.PrimaryKeyRelatedField(
+        queryset=Recipe.objects.all(),
+        error_messages={
+            'invalid': 'Неверные данные для добавления в избранное.'
+        }
+    )
+
+    class Meta:
+        model = Favorite
+        fields = ('recipe',)
+
+    def validate_recipe(self, value):
+        user = self.context['request'].user
+
+        if Favorite.objects.filter(user=user, recipe=value).exists():
+            raise self.fields['recipe'].fail('invalid')
+
+        return value
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        recipe = validated_data['recipe']
+        return Favorite.objects.create(user=user, recipe=recipe)
+
+
+class CartSerializer(serializers.ModelSerializer):
+    recipe = serializers.PrimaryKeyRelatedField(
+        queryset=Recipe.objects.all(),
+        error_messages={
+            'invalid': 'Неверные данные для добавления в корзину.'
+        }
+    )
+
+    class Meta:
+        model = Cart
+        fields = ('recipe',)
+
+    def validate_recipe(self, value):
+        user = self.context['request'].user
+
+        if Cart.objects.filter(user=user, recipe=value).exists():
+            raise self.fields['recipe'].fail('invalid')
+
+        return value
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        recipe = validated_data['recipe']
+        return Cart.objects.create(user=user, recipe=recipe)

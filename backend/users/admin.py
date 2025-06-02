@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from admin_auto_filters.filters import AutocompleteFilter
 from .models import FoodgramUser, Subscription
 
 
@@ -17,7 +18,7 @@ class FoodgramUserAdmin(UserAdmin):
     )
     list_display_links = ('email', 'username')
     list_filter = ('is_staff', 'is_superuser', 'is_active')
-    search_fields = ('username', 'email', 'first_name', 'last_name')
+    search_fields = ('username', 'email')
     ordering = ('email',)
 
     fieldsets = (
@@ -59,7 +60,22 @@ class FoodgramUserAdmin(UserAdmin):
         return super().get_fieldsets(request, obj)
 
 
+class SubscriberFilter(AutocompleteFilter):
+    title = 'Подписчик'
+    field_name = 'user'
+
+
+class AuthorFilter(AutocompleteFilter):
+    title = 'Автор'
+    field_name = 'following'
+
+
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'following')
-    search_fields = ('user__username', 'following__username')
+    list_display_links = ('following',)
+    list_filter = (SubscriberFilter, AuthorFilter)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('user').select_related('following')

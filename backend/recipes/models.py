@@ -1,11 +1,13 @@
 from django.contrib.auth import get_user_model
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 from .constants import (RECIPE_NAME_MAX_LENGTH,
                         RECIPE_IMAGE_UPLOAD_DIR,
                         MIN_COOKING_TIME_VALUE,
-                        MIN_INGREDIENT_AMOUNT_VALUE)
+                        MAX_COOKING_TIME_VALUE,
+                        MIN_INGREDIENT_AMOUNT_VALUE,
+                        MAX_INGREDIENT_AMOUNT_VALUE)
 from ingredients.models import Ingredient
 from users.models import FoodgramUser
 
@@ -29,7 +31,8 @@ class Recipe(models.Model):
 
     cooking_time = models.PositiveSmallIntegerField(
         validators=[
-            MinValueValidator(MIN_COOKING_TIME_VALUE)
+            MinValueValidator(MIN_COOKING_TIME_VALUE),
+            MaxValueValidator(MAX_COOKING_TIME_VALUE)
         ],
         verbose_name='Время приготовления'
     )
@@ -37,6 +40,7 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient,
         through='IngredientToRecipe',
+        related_name='recipes_with_ingredient',
         verbose_name='Ингредиенты'
     )
 
@@ -60,18 +64,21 @@ class IngredientToRecipe(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
+        related_name='ingredients_to_recipe',
         verbose_name='Рецепт'
     )
 
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
+        related_name='+',
         verbose_name='Ингредиент'
     )
 
     amount = models.PositiveSmallIntegerField(
         validators=[
-            MinValueValidator(MIN_INGREDIENT_AMOUNT_VALUE)
+            MinValueValidator(MIN_INGREDIENT_AMOUNT_VALUE),
+            MaxValueValidator(MAX_INGREDIENT_AMOUNT_VALUE)
         ],
         verbose_name='Колчиество'
     )
@@ -129,6 +136,7 @@ class Cart(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
+        related_name='added_to_cart_by',
         verbose_name='Рецепт'
     )
 

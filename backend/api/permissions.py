@@ -11,4 +11,4 @@ class IsAdminOrAuthor(BasePermission):
         if request.method in SAFE_METHODS:
             return True
 
-        return request.user.is_staff or obj.author == request.user
+        return request.user.is_superuser or obj.author == request.user

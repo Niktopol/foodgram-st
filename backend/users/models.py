@@ -66,6 +66,7 @@ class Subscription(models.Model):
     following = models.ForeignKey(
         FoodgramUser,
         on_delete=models.CASCADE,
+        related_name='subscribers',
         verbose_name='Автор'
     )
 
