@@ -16,30 +16,22 @@ class FoodgramUser(AbstractUser):
         validators=[
             RegexValidator(regex=r'^[\w.@+-]+$')
         ],
-        blank=False,
-        null=False,
         verbose_name='Уникальный юзернейм'
     )
 
     email = models.EmailField(
         max_length=MAX_EMAIL_LENGTH,
         unique=True,
-        blank=False,
-        null=False,
         verbose_name='Адрес электронной почты'
     )
 
     first_name = models.CharField(
         max_length=MAX_FIRST_NAME_LENGTH,
-        blank=False,
-        null=False,
         verbose_name='Имя'
     )
 
     last_name = models.CharField(
         max_length=MAX_LAST_NAME_LENGTH,
-        blank=False,
-        null=False,
         verbose_name='Фамилия'
     )
 
@@ -51,16 +43,16 @@ class FoodgramUser(AbstractUser):
         verbose_name='Аватар пользователя'
     )
 
-    def __str__(self):
-        return self.username
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ('username',)
 
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
-    USERNAME_FIELD = 'email'
+    def __str__(self):
+        return self.username
 
 
 class Subscription(models.Model):

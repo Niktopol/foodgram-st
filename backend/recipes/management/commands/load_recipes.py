@@ -1,11 +1,12 @@
+import base64
 import json
-import os
 
-from django.core.files import File
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 
-from recipes.models import Recipe, IngredientToRecipe, Ingredient
-from django.contrib.auth import get_user_model
+from recipes.models import IngredientToRecipe, Recipe
 
 User = get_user_model()
 
@@ -14,34 +15,42 @@ class Command(BaseCommand):
     help = 'Загрузка рецептов из data/recipes.json'
 
     def handle(self, *args, **kwargs):
-        recipes_file = os.path.join('data', 'recipes.json')
-        images_dir = os.path.join('data', 'recipes_images')
+        recipes_file = settings.BASE_DIR / 'data' / 'recipes.json'
         created_count = 0
 
-        with open(recipes_file, encoding='utf-8') as file:
+        with recipes_file.open(encoding='utf-8') as file:
             recipes = json.load(file)
 
             for data in recipes:
                 author = User.objects.get(id=data['author'])
-                image_path = os.path.join(images_dir, data['image'])
 
-                with open(image_path, 'rb') as img_file:
-                    recipe = Recipe.objects.create(
-                        name=data['name'],
-                        text=data['text'],
-                        cooking_time=data['cooking_time'],
-                        author=author,
-                        image=File(img_file, name=data['image'])
-                    )
+                image_data = data['image']
 
+                format, imgstr = image_data.split(';base64,')
+                ext = format.split('/')[-1]
+                image_file = ContentFile(
+                    base64.b64decode(imgstr),
+                    name=f'image.{ext}'
+                )
+
+                recipe = Recipe.objects.create(
+                    name=data['name'],
+                    text=data['text'],
+                    cooking_time=data['cooking_time'],
+                    author=author,
+                    image=image_file
+                )
+
+                ingredients_to_recipe = []
                 for ing in data['ingredients']:
-                    ingredient = Ingredient.objects.get(id=ing['id'])
-                    IngredientToRecipe.objects.create(
-                        recipe=recipe,
-                        ingredient=ingredient,
-                        amount=ing['amount']
+                    ingredients_to_recipe.append(
+                        IngredientToRecipe(
+                            recipe=recipe,
+                            ingredient_id=ing['id'],
+                            amount=ing['amount']
+                        )
                     )
-
+                IngredientToRecipe.objects.bulk_create(ingredients_to_recipe)
                 created_count += 1
 
         self.stdout.write(

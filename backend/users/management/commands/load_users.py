@@ -1,7 +1,8 @@
 import json
-import os
-from django.core.management.base import BaseCommand
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.management.base import BaseCommand
 
 User = get_user_model()
 
@@ -10,9 +11,10 @@ class Command(BaseCommand):
     help = 'Загрузка пользователей из data/users.json'
 
     def handle(self, *args, **kwargs):
-        file_path = os.path.join('data', 'users.json')
+        file_path = settings.BASE_DIR / 'data' / 'users.json'
         created_count = 0
-        with open(file_path, encoding='utf-8') as file:
+
+        with file_path.open(encoding='utf-8') as file:
             users = json.load(file)
             for user_data in users:
                 email = user_data['email']

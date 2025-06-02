@@ -1,5 +1,6 @@
 import json
-import os
+
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from recipes.models import Ingredient
@@ -9,9 +10,9 @@ class Command(BaseCommand):
     help = 'Загрузка ингредиентов из data/ingredients.json'
 
     def handle(self, *args, **kwargs):
-        file_path = os.path.join('data', 'ingredients.json')
+        file_path = settings.BASE_DIR / 'data' / 'ingredients.json'
         count = 0
-        with open(file_path, encoding='utf-8') as file:
+        with file_path.open(encoding='utf-8') as file:
             data = json.load(file)
             for item in data:
                 obj, created = Ingredient.objects.get_or_create(

@@ -15,21 +15,15 @@ User = get_user_model()
 class Recipe(models.Model):
     name = models.CharField(
         max_length=RECIPE_NAME_MAX_LENGTH,
-        blank=False,
-        null=False,
         verbose_name='Название'
     )
 
     image = models.ImageField(
         upload_to=RECIPE_IMAGE_UPLOAD_DIR,
-        blank=False,
-        null=False,
         verbose_name='Фото блюда'
     )
 
     text = models.TextField(
-        blank=False,
-        null=False,
         verbose_name='Описание'
     )
 
@@ -37,8 +31,6 @@ class Recipe(models.Model):
         validators=[
             MinValueValidator(MIN_COOKING_TIME_VALUE)
         ],
-        blank=False,
-        null=False,
         verbose_name='Время приготовления'
     )
 
@@ -55,13 +47,13 @@ class Recipe(models.Model):
         verbose_name='Автор'
     )
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ('name',)
+
+    def __str__(self):
+        return self.name
 
 
 class IngredientToRecipe(models.Model):
@@ -84,16 +76,16 @@ class IngredientToRecipe(models.Model):
         verbose_name='Колчиество'
     )
 
+    class Meta:
+        verbose_name = 'Ингредиент рецепта'
+        verbose_name_plural = 'Ингредиенты рецепта'
+        ordering = ('amount',)
+
     def __str__(self):
         return (
             f'{self.recipe}: {self.ingredient} '
             f'{self.amount} {self.ingredient.measurement_unit}'
         )
-
-    class Meta:
-        verbose_name = 'Ингредиент рецепта'
-        verbose_name_plural = 'Ингредиенты рецепта'
-        ordering = ('amount',)
 
 
 class Favorite(models.Model):
@@ -111,9 +103,6 @@ class Favorite(models.Model):
         verbose_name='Рецепт'
     )
 
-    def __str__(self):
-        return f'{self.user} -> {self.recipe}'
-
     class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
@@ -124,6 +113,9 @@ class Favorite(models.Model):
                 name='unique_favorite'
             )
         ]
+
+    def __str__(self):
+        return f'{self.user} -> {self.recipe}'
 
 
 class Cart(models.Model):
@@ -140,9 +132,6 @@ class Cart(models.Model):
         verbose_name='Рецепт'
     )
 
-    def __str__(self):
-        return f'{self.user} -> {self.recipe}'
-
     class Meta:
         verbose_name = 'Рецепт в корзине'
         verbose_name_plural = 'Рецепты в корзине'
@@ -153,3 +142,6 @@ class Cart(models.Model):
                 name='unique_in_cart'
             )
         ]
+
+    def __str__(self):
+        return f'{self.user} -> {self.recipe}'
