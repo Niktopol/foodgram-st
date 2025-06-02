@@ -36,7 +36,7 @@
     {
         "name": "ничто с ничем",
         "text": "Неизвестно.",
-        "cooking_time": 10000,
+        "cooking_time": 1000,
         "author": 3,
         "ingredients": [
             {
