@@ -1,29 +1,31 @@
-from django.db.models import Prefetch, Sum, Count
+from django.db.models import Count, Prefetch, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from rest_framework import permissions, status, viewsets
-from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.response import Response
 
-from users.models import FoodgramUser, Subscription
 from ingredients.models import Ingredient
-from recipes.models import Recipe, IngredientToRecipe, Favorite, Cart
+from recipes.models import Cart, Favorite, IngredientToRecipe, Recipe
+from users.models import FoodgramUser, Subscription
+
 from .constants import SHOPPING_LIST_FILE_NAME
 from .filters import IngredientSearchFilter, RecipeFilter
 from .pagination import LimitPageNumberPagination
 from .permissions import IsAdminOrAuthor
 from .serializers import (
-    FoodgramUserSerializer,
     AvatarSerializer,
-    SubscriptionSerializer,
-    SubscriptionUserSerializer,
+    CartSerializer,
+    FavoriteSerializer,
+    FoodgramUserSerializer,
     IngredientSerializer,
     RecipeSerializer,
-    FavoriteSerializer,
-    CartSerializer,
-    ShortRecipeSerializer
+    ShortRecipeSerializer,
+    SubscriptionSerializer,
+    SubscriptionUserSerializer,
 )
 
 

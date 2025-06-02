@@ -1,5 +1,6 @@
-from django.db.models import Prefetch
 from django.contrib import admin
+from django.db.models import Prefetch
+
 from admin_auto_filters.filters import AutocompleteFilter
 
 from .models import Recipe, IngredientToRecipe, Favorite, Cart

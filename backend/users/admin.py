@@ -1,6 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+
 from admin_auto_filters.filters import AutocompleteFilter
+
 from .models import FoodgramUser, Subscription
 
 

@@ -1,9 +1,10 @@
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
 
-from users.models import FoodgramUser, Subscription
 from ingredients.models import Ingredient
-from recipes.models import Recipe, IngredientToRecipe, Favorite, Cart
+from recipes.models import Cart, Favorite, IngredientToRecipe, Recipe
+from users.models import FoodgramUser, Subscription
+
 from .fields import Base64ImageField
 
 

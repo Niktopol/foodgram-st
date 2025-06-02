@@ -1,7 +1,9 @@
 from django.db import models
 
-from .constants import (MAX_INGREDIENT_NAME_LENGTH,
-                        MAX_MEASUREMENT_UNIT_NAME_LENGTH)
+from .constants import (
+    MAX_INGREDIENT_NAME_LENGTH,
+    MAX_MEASUREMENT_UNIT_NAME_LENGTH,
+)
 
 
 class Ingredient(models.Model):
