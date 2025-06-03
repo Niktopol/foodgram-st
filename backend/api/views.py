@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db.models import Count, Prefetch, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -10,7 +11,7 @@ from rest_framework.response import Response
 
 from ingredients.models import Ingredient
 from recipes.models import Cart, Favorite, IngredientToRecipe, Recipe
-from users.models import FoodgramUser, Subscription
+from users.models import Subscription
 
 from .constants import SHOPPING_LIST_FILE_NAME
 from .filters import IngredientSearchFilter, RecipeFilter
@@ -27,6 +28,8 @@ from .serializers import (
     SubscriptionSerializer,
     SubscriptionUserSerializer,
 )
+
+User = get_user_model()
 
 
 # Вьюсеты пользователей
@@ -72,7 +75,7 @@ class CustomUserViewSet(UserViewSet):
         url_path='subscriptions'
     )
     def user_subscriptions(self, request):
-        queryset = FoodgramUser.objects.filter(
+        queryset = User.objects.filter(
             subscriptions__user=request.user
         ).annotate(recipes_count=Count('recipes'))
 
@@ -101,7 +104,7 @@ class CustomUserViewSet(UserViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
-            following = FoodgramUser.objects.annotate(
+            following = User.objects.annotate(
                 recipes_count=Count('recipes')
             ).get(id=id)
 
@@ -116,7 +119,8 @@ class CustomUserViewSet(UserViewSet):
                 user=user,
                 following_id=id
             )
-            if subscription.delete()[0]:
+            deleted_count, deleted_details = subscription.delete()
+            if deleted_count > 0:
                 return Response(status=status.HTTP_204_NO_CONTENT)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -152,33 +156,48 @@ class RecipeViewSet(viewsets.ModelViewSet):
     lookup_field = 'id'
     filterset_class = RecipeFilter
 
+    def handle_add_remove_recipe(
+            self,
+            request,
+            id,
+            serializer_class,
+            model_class
+    ):
+        user = request.user
+
+        if request.method == 'POST':
+            serializer = serializer_class(
+                data={'recipe': id},
+                context={'request': request}
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            recipe = ShortRecipeSerializer(
+                Recipe.objects.get(id=id),
+                context={'request': request}
+            )
+            return Response(recipe.data, status=status.HTTP_201_CREATED)
+
+        elif request.method == 'DELETE':
+            relation = model_class.objects.filter(user=user, recipe_id=id)
+            deleted_count, deleted_details = relation.delete()
+            if deleted_count > 0:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
     @action(
         methods=['post', 'delete'],
         detail=True,
         url_path='favorite'
     )
     def set_favorited(self, request, id):
-        user = request.user
-
-        if request.method == 'POST':
-            serializer = FavoriteSerializer(
-                data={'recipe': id},
-                context=self.get_serializer_context()
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-
-            resp = ShortRecipeSerializer(
-                Recipe.objects.get(id=id),
-                context=self.get_serializer_context()
-            )
-            return Response(resp.data, status=status.HTTP_201_CREATED)
-
-        elif request.method == 'DELETE':
-            favourite = Favorite.objects.filter(user=user, recipe_id=id)
-            if favourite.delete()[0]:
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        return self.handle_add_remove_recipe(
+            request,
+            id,
+            FavoriteSerializer,
+            Favorite
+        )
 
     @action(
         methods=['post', 'delete'],
@@ -186,27 +205,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         url_path='shopping_cart'
     )
     def edit_cart(self, request, id):
-        user = request.user
-
-        if request.method == 'POST':
-            serializer = CartSerializer(
-                data={'recipe': id},
-                context=self.get_serializer_context()
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-
-            resp = ShortRecipeSerializer(
-                Recipe.objects.get(id=id),
-                context=self.get_serializer_context()
-            )
-            return Response(resp.data, status=status.HTTP_201_CREATED)
-
-        elif request.method == 'DELETE':
-            cart_recipe = Cart.objects.filter(user=user, recipe_id=id)
-            if cart_recipe.delete()[0]:
-                return Response(status=status.HTTP_204_NO_CONTENT)
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        return self.handle_add_remove_recipe(
+            request,
+            id,
+            CartSerializer,
+            Cart
+        )
 
     def get_shopping_cart_file_text(self, ingredients):
         lines = []
@@ -234,13 +238,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).annotate(
             total_amount=Sum('amount')
         ).order_by('ingredient__name').all()
-
-        lines = []
-        for item in ingredients:
-            name = item['ingredient__name']
-            unit = item['ingredient__measurement_unit']
-            amount = item['total_amount']
-            lines.append(f'{name} - {amount} {unit}')
 
         content = self.get_shopping_cart_file_text(ingredients)
         filename = f'{SHOPPING_LIST_FILE_NAME}.txt'

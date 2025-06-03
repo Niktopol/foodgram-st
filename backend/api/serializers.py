@@ -1,11 +1,15 @@
+from django.contrib.auth import get_user_model
+
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
 
 from ingredients.models import Ingredient
 from recipes.models import Cart, Favorite, IngredientToRecipe, Recipe
-from users.models import FoodgramUser, Subscription
+from users.models import Subscription
 
 from .fields import Base64ImageField
+
+User = get_user_model()
 
 
 # Сериализаторы пользователей
@@ -15,7 +19,7 @@ class FoodgramUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta(UserSerializer.Meta):
-        model = FoodgramUser
+        model = User
         fields = ('id', 'email', 'username', 'first_name',
                   'last_name', 'avatar', 'is_subscribed')
 
@@ -35,13 +39,13 @@ class AvatarSerializer(serializers.ModelSerializer):
     avatar = Base64ImageField(required=True, allow_null=False)
 
     class Meta:
-        model = FoodgramUser
+        model = User
         fields = ('avatar',)
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     following = serializers.PrimaryKeyRelatedField(
-        queryset=FoodgramUser.objects.all(),
+        queryset=User.objects.all(),
         error_messages={
             'invalid': 'Неверные данные для подписки.'
         }

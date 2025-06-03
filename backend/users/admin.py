@@ -1,14 +1,16 @@
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 
 from admin_auto_filters.filters import AutocompleteFilter
 
-from .models import FoodgramUser, Subscription
+from .models import Subscription
+
+User = get_user_model()
 
 
-@admin.register(FoodgramUser)
+@admin.register(User)
 class FoodgramUserAdmin(UserAdmin):
-    model = FoodgramUser
     list_display = (
         'id',
         'email',
@@ -80,4 +82,4 @@ class SubscriptionAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.select_related('user').select_related('following')
+        return qs.select_related('user', 'following')

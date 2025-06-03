@@ -11,7 +11,7 @@ from .constants import (
 )
 
 
-class FoodgramUser(AbstractUser):
+class User(AbstractUser):
     username = models.CharField(
         max_length=MAX_USERNAME_LENGTH,
         unique=True,
@@ -40,8 +40,7 @@ class FoodgramUser(AbstractUser):
     avatar = models.ImageField(
         upload_to=AVATAR_IMAGE_UPLOAD_DIR,
         blank=True,
-        null=True,
-        default=None,
+        default='',
         verbose_name='Аватар пользователя'
     )
 
@@ -59,21 +58,18 @@ class FoodgramUser(AbstractUser):
 
 class Subscription(models.Model):
     user = models.ForeignKey(
-        FoodgramUser,
+        User,
         on_delete=models.CASCADE,
         related_name='subscriptions',
         verbose_name='Подписчик'
     )
 
     following = models.ForeignKey(
-        FoodgramUser,
+        User,
         on_delete=models.CASCADE,
         related_name='subscribers',
         verbose_name='Автор'
     )
-
-    def __str__(self):
-        return f'{self.user} -> {self.following}'
 
     class Meta:
         verbose_name = 'Подписка'
@@ -85,3 +81,6 @@ class Subscription(models.Model):
                 name='unique_subscription'
             )
         ]
+
+    def __str__(self):
+        return f'{self.user} -> {self.following}'

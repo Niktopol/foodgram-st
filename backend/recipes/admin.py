@@ -64,7 +64,7 @@ class IngredientToRecipeAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.select_related('recipe').select_related('ingredient')
+        return qs.select_related('recipe', 'ingredient')
 
 
 class AddedByFilter(AutocompleteFilter):
@@ -80,7 +80,7 @@ class BaseUserRecipe(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.select_related('user').select_related('recipe')
+        return qs.select_related('user', 'recipe')
 
 
 @admin.register(Favorite)

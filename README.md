@@ -8,7 +8,22 @@
 
 ## Запуск приложения
 
-Для запуска проекта необходимо в директории infra создать .env по примеру .env.example (также находится в infra). Далее, находясь в директории infra, выполнить команду:
+Для запуска проекта необходимо в директории infra создать .env по примеру .env.example (также находится в infra). Пример содежания .env:
+
+```
+POSTGRES_DB=foodgram
+POSTGRES_USER=foodgram_user
+POSTGRES_PASSWORD=foodgram_password
+DB_NAME=foodgram
+DB_HOST=db
+DB_PORT=5432
+DJANGO_SECRET_KEY=django-insecure-=e7s9zvygrgc%v*zgiaxuptr8gkh&@_w$879mt99o3capsw985
+DJANGO_DEBUG_DISABLED=true
+DJANGO_ALLOWED_HOSTS=localhost,*
+DJANGO_USE_POSTGRES=true
+```
+
+Далее, находясь в директории infra, необходимо выполнить команду:
 
 ```bash
 docker compose up

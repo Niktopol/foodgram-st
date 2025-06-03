@@ -3,7 +3,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from ingredients.models import Ingredient
-from users.models import FoodgramUser
 
 from .constants import (
     MAX_COOKING_TIME_VALUE,
@@ -100,7 +99,7 @@ class IngredientToRecipe(models.Model):
 
 class Favorite(models.Model):
     user = models.ForeignKey(
-        FoodgramUser,
+        User,
         on_delete=models.CASCADE,
         related_name='favorites',
         verbose_name='Добавивший в избранное'
@@ -130,7 +129,7 @@ class Favorite(models.Model):
 
 class Cart(models.Model):
     user = models.ForeignKey(
-        FoodgramUser,
+        User,
         on_delete=models.CASCADE,
         related_name='cart_recipes',
         verbose_name='Добавивший в корзину'
