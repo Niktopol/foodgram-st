@@ -108,11 +108,11 @@ class CustomUserViewSet(UserViewSet):
                 recipes_count=Count('recipes')
             ).get(id=id)
 
-            resp = SubscriptionUserSerializer(
+            subscribtion = SubscriptionUserSerializer(
                 following,
                 context=self.get_serializer_context()
             )
-            return Response(resp.data, status=status.HTTP_201_CREATED)
+            return Response(subscribtion.data, status=status.HTTP_201_CREATED)
 
         elif request.method == 'DELETE':
             subscription = Subscription.objects.filter(
